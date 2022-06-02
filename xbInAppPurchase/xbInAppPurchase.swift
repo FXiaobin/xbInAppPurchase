@@ -67,9 +67,10 @@ public final class xbInAppPurchase: NSObject {
      withProductId: 内购商品id
      isDistribute: 是否是发布环境 默认FALSE，默认为测试环境
      */
-    func applePayRequest(withProductId: String, isDistribute: Bool = false){
+    func applePayRequest(withProductId: String, delegate: xbInAppPurchaseDelegate?, isDistribute: Bool = false){
         currentProductID = withProductId
         self.isDistribute = isDistribute
+        self.xbDelegate = delegate
         
         let productIds = [withProductId]
         let set: Set<String> = Set(productIds)
@@ -151,10 +152,11 @@ extension xbInAppPurchase: SKProductsRequestDelegate {
     
     public func requestDidFinish(_ request: SKRequest) {
         if  request.isKind(of: SKProductsRequest.self) {
-            debugPrint("内购商品请求成功 request: \(request)")
+            let proRequest: SKProductsRequest = request as! SKProductsRequest
+            debugPrint("内购商品请求完成（注意：失败和成功都算完成） SKProductsRequest: \(proRequest)")
             
         }else if request.isKind(of: SKReceiptRefreshRequest.self) {
-            debugPrint("刷新本地凭证请求成功 request: \(request)")
+            debugPrint("刷新本地凭证请求完成（注意：失败和成功都算完成） SKReceiptRefreshRequest: \(request)")
             // 开始本地内购支付凭证验证
             if let trans = currentNeedVerifyTrans {
                 completedHandle(withTrans: trans)
@@ -319,8 +321,9 @@ extension xbInAppPurchase: SKPaymentTransactionObserver {
 //        }
         
         // 网络请求
-        
-        xbDelegate?.serverVerifyReceipt(withTrans: withTrans, receiptStr: receiptStr)
+        if let delegate = xbDelegate {
+            delegate.serverVerifyReceipt(withTrans: withTrans, receiptStr: receiptStr)
+        }
         
     }
     
