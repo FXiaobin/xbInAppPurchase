@@ -3,7 +3,7 @@ Pod::Spec.new do |spec|
 
 
   spec.name         = "xbInAppPurchase"
-  spec.version      = "0.0.2"
+  spec.version      = "0.0.3"
   spec.summary      = "xbInAppPurchase."
   spec.description  = "苹果内购封装，xbInAppPurchase"
 
