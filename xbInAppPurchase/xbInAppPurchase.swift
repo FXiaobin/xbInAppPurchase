@@ -8,11 +8,17 @@
 import UIKit
 import StoreKit
 
+fileprivate let xbInAppPurchaseSaveInfoKey: String = "xbInAppPurchaseSaveInfoKey"
+
 public protocol xbInAppPurchaseDelegate: NSObjectProtocol {
+    
+    /** 交易状态更新*/
+    func updated(withTrans: SKPaymentTransaction, state: SKPaymentTransactionState)
     
     /** 服务器验证支付凭证 （ 验证成功后记得结束交易：SKPaymentQueue.default().finishTransaction(transaction)）*/
     func serverVerifyReceipt(withTrans: SKPaymentTransaction, receiptStr: String)
    
+    
 }
 
 public final class xbInAppPurchase: NSObject {
@@ -110,6 +116,24 @@ public final class xbInAppPurchase: NSObject {
         return data?.base64EncodedString(options: .endLineWithLineFeed)
     }
    
+    /** 本地保存交易记录（订单号，商品ID等标识） 存储订单&uid&凭证*/
+    func saveTransactionInfo(info: String) {
+        UserDefaults.standard.set(info, forKey: xbInAppPurchaseSaveInfoKey)
+        UserDefaults.standard.synchronize()
+    }
+    
+    /** 获取本地保存的交易记录（订单号，商品ID等标识）*/
+    func getTransactionInfo() -> String {
+        let info: String = UserDefaults.standard.object(forKey: xbInAppPurchaseSaveInfoKey) as! String
+        return info
+    }
+    
+    /** 移除本地保存交易记录（订单号，商品ID等标识）*/
+    func removeTransactionInfo() {
+        UserDefaults.standard.removeObject(forKey: xbInAppPurchaseSaveInfoKey)
+        UserDefaults.standard.synchronize()
+    }
+    
 }
 
 // MARK: 请求内购商品回调
@@ -183,6 +207,10 @@ extension xbInAppPurchase: SKPaymentTransactionObserver {
     public func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         
         for transaction in transactions{
+            
+            if let delegate = self.xbDelegate {
+                delegate.updated(withTrans: transaction, state: transaction.transactionState)
+            }
             
             switch transaction.transactionState {
             case .purchasing:   // 正在将事务添加到服务器队列。

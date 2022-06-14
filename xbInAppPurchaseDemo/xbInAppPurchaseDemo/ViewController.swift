@@ -37,6 +37,10 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: xbInAppPurchaseDelegate {
+    func updated(withTrans: SKPaymentTransaction, state: SKPaymentTransactionState) {
+        
+    }
+    
     
     func serverVerifyReceipt(withTrans: SKPaymentTransaction, receiptStr: String) {
         debugPrint("----- 支付成功后 服务器再次验证 ----")
